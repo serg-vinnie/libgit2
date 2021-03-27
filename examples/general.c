@@ -158,11 +158,6 @@ static void oid_parsing(git_oid *oid)
 	 * If you have a oid, you can easily get the hex value of the SHA as well.
 	 */
 	git_oid_fmt(out, oid);
-
-	/**
-	 * If you have a oid, you can easily get the hex value of the SHA as well.
-	 */
-	git_oid_fmt(out, oid);
 	printf("SHA hex string: %s\n", out);
 }
 
@@ -707,7 +702,7 @@ static void reference_listing(git_repository *repo)
 		git_reference_free(ref);
 	}
 
-	git_strarray_free(&ref_list);
+	git_strarray_dispose(&ref_list);
 }
 
 /**

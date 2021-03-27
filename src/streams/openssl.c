@@ -11,7 +11,8 @@
 
 #include <ctype.h>
 
-#include "global.h"
+#include "runtime.h"
+#include "settings.h"
 #include "posix.h"
 #include "stream.h"
 #include "streams/socket.h"
@@ -285,9 +286,7 @@ int git_openssl_stream_global_init(void)
 	if (init_bio_method() < 0)
 		goto error;
 
-	git__on_shutdown(shutdown_ssl);
-
-	return 0;
+	return git_runtime_shutdown_register(shutdown_ssl);
 
 error:
 	git_error_set(GIT_ERROR_NET, "could not initialize openssl: %s",
@@ -324,8 +323,8 @@ int git_openssl_set_locking(void)
 	}
 
 	CRYPTO_set_locking_callback(openssl_locking_function);
-	git__on_shutdown(shutdown_ssl_locking);
-	return 0;
+	return git_runtime_shutdown_register(shutdown_ssl_locking);
+
 #elif !defined(OPENSSL_LEGACY_API)
 	return 0;
 #else
@@ -415,8 +414,8 @@ static int ssl_set_error(SSL *ssl, int error)
 
 	err = SSL_get_error(ssl, error);
 
-	assert(err != SSL_ERROR_WANT_READ);
-	assert(err != SSL_ERROR_WANT_WRITE);
+	GIT_ASSERT(err != SSL_ERROR_WANT_READ);
+	GIT_ASSERT(err != SSL_ERROR_WANT_WRITE);
 
 	switch (err) {
 	case SSL_ERROR_WANT_CONNECT:
@@ -655,15 +654,16 @@ static int openssl_connect(git_stream *stream)
 static int openssl_certificate(git_cert **out, git_stream *stream)
 {
 	openssl_stream *st = (openssl_stream *) stream;
-	int len;
 	X509 *cert = SSL_get_peer_certificate(st->ssl);
-	unsigned char *guard, *encoded_cert;
+	unsigned char *guard, *encoded_cert = NULL;
+	int error, len;
 
 	/* Retrieve the length of the certificate first */
 	len = i2d_X509(cert, NULL);
 	if (len < 0) {
 		git_error_set(GIT_ERROR_NET, "failed to retrieve certificate information");
-		return -1;
+		error = -1;
+		goto out;
 	}
 
 	encoded_cert = git__malloc(len);
@@ -673,18 +673,23 @@ static int openssl_certificate(git_cert **out, git_stream *stream)
 
 	len = i2d_X509(cert, &guard);
 	if (len < 0) {
-		git__free(encoded_cert);
 		git_error_set(GIT_ERROR_NET, "failed to retrieve certificate information");
-		return -1;
+		error = -1;
+		goto out;
 	}
 
 	st->cert_info.parent.cert_type = GIT_CERT_X509;
 	st->cert_info.data = encoded_cert;
 	st->cert_info.len = len;
+	encoded_cert = NULL;
 
 	*out = &st->cert_info.parent;
+	error = 0;
 
-	return 0;
+out:
+	git__free(encoded_cert);
+	X509_free(cert);
+	return error;
 }
 
 static int openssl_set_proxy(git_stream *stream, const git_proxy_options *proxy_opts)
@@ -752,7 +757,9 @@ static int openssl_stream_wrap(
 {
 	openssl_stream *st;
 
-	assert(out && in && host);
+	GIT_ASSERT_ARG(out);
+	GIT_ASSERT_ARG(in);
+	GIT_ASSERT_ARG(host);
 
 	st = git__calloc(1, sizeof(openssl_stream));
 	GIT_ERROR_CHECK_ALLOC(st);
@@ -795,7 +802,9 @@ int git_openssl_stream_new(git_stream **out, const char *host, const char *port)
 	git_stream *stream = NULL;
 	int error;
 
-	assert(out && host && port);
+	GIT_ASSERT_ARG(out);
+	GIT_ASSERT_ARG(host);
+	GIT_ASSERT_ARG(port);
 
 	if ((error = git_socket_stream_new(&stream, host, port)) < 0)
 		return error;

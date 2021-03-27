@@ -151,7 +151,7 @@ int git_win32_path_canonicalize(git_win32_path path)
 	return (int)(to - path);
 }
 
-int git_win32_path__cwd(wchar_t *out, size_t len)
+static int win32_path_cwd(wchar_t *out, size_t len)
 {
 	int cwd_len;
 
@@ -241,7 +241,7 @@ int git_win32_path_from_utf8(git_win32_path out, const char *src)
 	else {
 		int cwd_len;
 
-		if ((cwd_len = git_win32_path__cwd(dest, MAX_PATH)) < 0)
+		if ((cwd_len = win32_path_cwd(dest, MAX_PATH)) < 0)
 			goto on_error;
 
 		dest[cwd_len++] = L'\\';
@@ -492,14 +492,12 @@ size_t git_win32_path_remove_namespace(wchar_t *str, size_t len)
 		prefix_len = CONST_STRLEN(unc_prefix);
 	}
 
-	if (remainder) {
-		/*
-		 * Sanity check that the new string isn't longer than the old one.
-		 * (This could only happen due to programmer error introducing a
-		 * prefix longer than the namespace it replaces.)
-		 */
-		assert(len >= remainder_len + prefix_len);
-
+	/*
+	 * Sanity check that the new string isn't longer than the old one.
+	 * (This could only happen due to programmer error introducing a
+	 * prefix longer than the namespace it replaces.)
+	 */
+	if (remainder && len >= remainder_len + prefix_len) {
 		if (prefix)
 			memmove(str, prefix, prefix_len * sizeof(wchar_t));
 

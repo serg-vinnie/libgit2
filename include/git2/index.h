@@ -349,7 +349,7 @@ GIT_EXTERN(int) git_index_write_tree(git_oid *out, git_index *index);
  *
  * The index must not contain any file in conflict.
  *
- * @param out Pointer where to store OID of the the written tree
+ * @param out Pointer where to store OID of the written tree
  * @param index Index to write
  * @param repo Repository where to write the tree
  * @return 0 on success, GIT_EUNMERGED when the index is not clean
@@ -555,8 +555,7 @@ GIT_EXTERN(int) git_index_add_bypath(git_index *index, const char *path);
  *
  * If a previous index entry exists that has the same path as the
  * given 'entry', it will be replaced.  Otherwise, the 'entry' will be
- * added. The `id` and the `file_size` of the 'entry' are updated with the
- * real value of the blob.
+ * added.
  *
  * This forces the file to be added to the index, not looking
  * at gitignore rules.  Those rules can be evaluated through

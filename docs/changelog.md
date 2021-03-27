@@ -1,3 +1,162 @@
+vNext
+-----
+
+### Changes or improvements
+
+* Branch and tag name validation functions have been introduced:
+  `git_branch_name_is_valid` will check if a branch name is valid,
+  and `git_tag_name_is_valid` will check if a tag name is valid.
+
+* Some remote and reference validity checking functions have been
+  introduced with error reporting semantics.  `git_remote_name_is_valid`
+  replaces `git_remote_is_valid_name`.  `git_reference_name_is_valid`
+  replaces `git_reference_is_valid_name`.  Tthe former functions are
+  deprecated.
+
+### Breaking CMake configuration changes
+
+The `MVSC_CRTDBG` configuration option is now `WIN32_LEAKCHECK`.
+
+v1.1
+----
+
+This is release v1.1, "Fernweh".
+
+### Changes or improvements
+
+* Our bundled PCRE dependency has been updated to 8.44.
+
+* The `refs/remotes/origin/HEAD` file will be created at clone time to
+  point to the origin's default branch.
+
+* libgit2 now uses the `__atomic_` intrinsics instead of `__sync_`
+  intrinsics on supported gcc and clang versions.
+
+* The `init.defaultBranch` setting is now respected and `master` is
+  no longer the hardcoded as the default branch name.
+
+* Patch files that do not contain an `index` line can now be parsed.
+
+* Configuration files with multi-line values can now contain quotes
+  split across multiple lines.
+
+* Windows clients now attempt to use TLS1.3 when available.
+
+* Servers that request an upgrade to a newer HTTP version are
+  silently ignored instead of erroneously failing.
+
+* Users can pass `NULL` to the options argument to
+  `git_describe_commit`.
+
+* Clones and fetches of very large packfiles now succeeds on 32-bit
+  platforms.
+
+* Custom reference database backends can now handle the repository's
+  `HEAD` correctly.
+
+* Repositories with a large number of packfiles no longer exhaust the
+  number of file descriptors.
+
+* The test framework now supports TAP output when the `-t` flag is
+  specified.
+
+* The test framework can now specify an exact match to a test
+  function using a trailing `$`.
+
+* All checkout types support `GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH`.
+
+* `git_blame` now can ignore whitespace changes using the option
+  `GIT_BLAME_IGNORE_WHITESPACE`.
+
+* Several new examples have been created, including an examples for
+  commit, add and push.
+
+* Mode changes during rename are now supported in patch application.
+
+* `git_checkout_head` now correctly removes untracked files in a
+  subdirectory when the `FORCE | REMOVE_UNTRACKED` options are specified.
+
+v1.0.1
+------
+
+This is a bugfix release with the following changes:
+
+- Calculating information about renamed files during merges is more
+  efficient because dissimilarity about files is now being cached and
+  no longer needs to be recomputed.
+  
+- The `git_worktree_prune_init_options` has been correctly restored for
+  backward compatibility.  In v1.0 it was incorrectly deprecated with a
+  typo.
+
+- The optional ntlmclient dependency now supports NetBSD.
+
+- A bug where attempting to stash on a bare repository may have failed
+  has been fixed.
+
+- Configuration files that are unreadable due to permissions are now
+  silently ignored, and treated as if they do not exist.  This matches
+  git's behavior; previously this case would have been an error.
+
+- v4 index files are now correctly written; previously we would read
+  them correctly but would not write the prefix-compression accurately,
+  causing corruption.
+
+- A bug where the smart HTTP transport could not read large data packets
+  has been fixed.  Previously, fetching from servers like Gerrit, that
+  sent large data packets, would error.
+
+v1.0
+----
+
+This is release v1.0 "Luftschloss", which is the first stabe release of
+libgit2. The API will stay compatible across all releases of the same major
+version. This release includes bugfixes only and supersedes v0.99, which will
+stop being maintained. Both v0.27 and v0.28 stay supported in accordance with
+our release policy.
+
+### Changes or improvements
+
+- CMake was converted to make use of the GNUInstallDirs module for both our
+  pkgconfig and install targets in favor of our custom build options
+  `BIN_INSTALL_DIR`, `LIB_INSTALL_DIR` and `INCLUDE_INSTALL_DIR`. Instead, you
+  can now use CMakes standard variables `CMAKE_INSTALL_BINDIR`,
+  `CMAKE_INSTALL_LIBDIR` and `CMAKE_INSTALL_INCLUDEDIR`.
+
+- Some CMake build options accepted either a specific value or a boolean value
+  to disable the option altogether or use automatic detection. We only accepted
+  "ON" or "OFF", but none of the other values CMake recognizes as boolean. This
+  was aligned with CMake's understanding of booleans.
+
+- The installed pkgconfig file contained incorrect values for both `libdir` and
+  `includedir` variables.
+
+- If using pcre2 for regular expressions, then we incorrectly added "pcre2"
+  instead of "pcre2-8" to our pkgconfig dependencies, which was corrected.
+
+- Fixed building the bundled ntlmclient dependency on FreeBSD, OpenBSD and
+  SunOS.
+
+- When writing symlinks on Windows, we incorrectly handled relative symlink
+  targets, which was corrected.
+
+- When using the HTTP protocol via macOS' SecureTransport implementation, reads
+  could stall at the end of the session and only continue after a timeout of 60
+  seconds was reached.
+
+- The filesystem-based reference callback didn't corectly initialize the backend
+  version.
+
+- A segmentation fault was fixed when calling `git_blame_buffer()` for files
+  that were modified and added to the index.
+
+- A backwards-incompatible change was introduced when we moved some structures
+  from "git2/credentials.h" into "git2/sys/credentials.h". This was fixed in the
+  case where you do not use hard deprecation.
+
+- Improved error handling in various places.
+
+
 v0.99
 -----
 
