@@ -15,8 +15,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.5.1)
 
 project(libgit2 VERSION "1.1.0" LANGUAGES C)
 
-SET (CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)")
-
 # Add find modules to the path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${libgit2_SOURCE_DIR}/cmake/")
 
@@ -37,9 +35,9 @@ INCLUDE(EnableWarnings)
 # Build options
 #
 OPTION(SONAME				"Set the (SO)VERSION of the target"			 ON)
-OPTION(BUILD_SHARED_LIBS		"Build Shared Library (OFF for Static)"			 ON)
+OPTION(BUILD_SHARED_LIBS		"Build Shared Library (OFF for Static)"			 OFF)
 OPTION(THREADSAFE			"Build libgit2 as threadsafe"				 OFF)
-OPTION(BUILD_CLAR			"Build Tests using the Clar suite"			 ON)
+OPTION(BUILD_CLAR			"Build Tests using the Clar suite"			 OFF)
 OPTION(BUILD_EXAMPLES			"Build library usage example apps"			OFF)
 OPTION(BUILD_FUZZERS			"Build the fuzz targets"				OFF)
 OPTION(ENABLE_TRACE			"Enables tracing support"				ON)
